@@ -1,0 +1,12 @@
+{
+  "db:config.title": "DB Titles Configuration",
+  "db:config.enabled": "Enabled",
+  "db:config.disabled": "Disabled",
+
+  "db:config.mod": "Mod",
+  "db:config.victory": "Victory Title",
+  "db:config.death": "Death Title",
+  "db:config.bed": "Bed Destroyed Title",
+
+  "db:config.done": "Done"
+}

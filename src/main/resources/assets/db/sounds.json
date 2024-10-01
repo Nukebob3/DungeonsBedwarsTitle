@@ -1,0 +1,12 @@
+{
+  "finally": {
+    "sounds": [
+      "db:finally"
+    ]
+  },
+  "death": {
+    "sounds": [
+      "db:death"
+    ]
+  }
+}
