@@ -90,7 +90,7 @@ public class DeathOverlay {
                 backFrame[0] += tickDeltaManager.getLastFrameDuration();
                 frame[0] += tickDeltaManager.getLastFrameDuration();
             }
-            if (frame[0] > 500) {
+            if (frame[0] > 200) {
                 DeathOverlay.running = false;
             }
             if (!running) {

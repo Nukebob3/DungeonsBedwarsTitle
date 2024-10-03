@@ -9,8 +9,8 @@
 	],
 	"contact": {
 		"homepage": "https://modrinth.com/project/dungeonsbedwarsvictory",
-		"sources": "skib",
-		"issues": "skib"
+		"sources": "https://github.com/Nukebob3/DungeonsBedwarsTitle",
+		"issues": "https://github.com/Nukebob3/DungeonsBedwarsTitle/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/db/icon.png",
@@ -29,7 +29,8 @@
 	"depends": {
 		"fabricloader": ">=0.15.0",
 		"minecraft": "~1.21",
-		"java": ">=21"
+		"java": ">=21",
+		"fabric-api": "*"
 	},
 	"suggests": {
 		"another-mod": "*"
@@ -38,7 +39,7 @@
 		"modmenu": {
 			"links": {
 				"modmenu.discord": "https://discord.gg/FddwMasb",
-				"modmenu.youtube": "youtube.com/nukebob3"
+				"modmenu.youtube": "https://www.youtube.com/nukebob3"
 			},
 			"update_checker": true
 		}

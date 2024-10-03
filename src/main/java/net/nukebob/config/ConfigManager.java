@@ -2,6 +2,8 @@ package net.nukebob.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.nukebob.DungeonsBedwars;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -20,7 +22,7 @@ public class ConfigManager {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 config = GSON.fromJson(reader, Config.class);
             } catch (IOException e) {
-                e.printStackTrace();
+                DungeonsBedwars.LOGGER.error("Could not load config file", e);
             }
         }
         return config;
@@ -30,7 +32,7 @@ public class ConfigManager {
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(config, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            DungeonsBedwars.LOGGER.error("Could not save config file", e);
         }
     }
 }

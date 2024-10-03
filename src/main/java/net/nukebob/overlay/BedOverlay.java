@@ -25,12 +25,13 @@ public class BedOverlay {
         AtomicBoolean lRunning = new AtomicBoolean(true);
         if (DeathOverlay.running) {
             HudRenderCallback.EVENT.register((drawContext, tickDeltaManager) -> {
+                int fadeOutAfter = 100;
+                int fade = 5;
                 if (lRunning.get()) {
                     MinecraftClient client = MinecraftClient.getInstance();
                     int screenWidth = client.getWindow().getScaledWidth();
                     int screenHeight = client.getWindow().getScaledHeight();
                     int frameDuration = 3;
-                    int fade = 5;
                     Identifier bed;
                     if (Math.floor(frame[0]) <= frameDuration) {
                         bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/0.png");
@@ -45,7 +46,6 @@ public class BedOverlay {
                     int yShake = 0;
                     int xShakeFactor = 5;
                     int yShakeFactor = 5;
-                    int fadeOutAfter = 100;
                     if (Math.floor(frame[0]) < 10) {
                         xShake = (int) (xShakeFactor * (1 - (Math.floor(frame[0]) / 10)));
                         if ((int) frame[0] % 2 == 0) xShake *= -1;
@@ -88,21 +88,22 @@ public class BedOverlay {
                         RenderSystem.disableBlend();
 
                         frame[0] += tickDeltaManager.getLastFrameDuration();
-                    } else {
-                        running = false;
-                        lRunning.set(false);
                     }
+                }
+                if (frame[0] > fadeOutAfter + fade) {
+                    running = false;
+                    lRunning.set(false);
                 }
             });
         } else {
             HudRenderCallback.EVENT.register((drawContext, tickDeltaManager) -> {
                 int fadeOutAfter = 100;
+                int fade = 5;
                 if (lRunning.get()) {
                     MinecraftClient client = MinecraftClient.getInstance();
                     int screenWidth = client.getWindow().getScaledWidth();
                     int screenHeight = client.getWindow().getScaledHeight();
                     int frameDuration = 3;
-                    int fade = 5;
                     Identifier bed;
                     if (Math.floor(frame[0]) <= frameDuration) {
                         bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/0.png");
@@ -161,7 +162,7 @@ public class BedOverlay {
                         frame[0] += tickDeltaManager.getLastFrameDuration();
                     }
                 }
-                if (frame[0] > fadeOutAfter) {
+                if (frame[0] > fadeOutAfter + fade) {
                     running = false;
                     lRunning.set(false);
                 }
@@ -173,15 +174,17 @@ public class BedOverlay {
         ScoreboardObjective sidebar = client.player.getScoreboard().getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
         if (sidebar != null) {
             for (ScoreboardEntry entry : client.player.getScoreboard().getScoreboardEntries(sidebar)) {
-                if (entry.display().getString().contains("YOU")) {
-                    if (entry.display().getString().contains("Red")) return "red";
-                    if (entry.display().getString().contains("Blue")) return "blue";
-                    if (entry.display().getString().contains("Green")) return "green";
-                    if (entry.display().getString().contains("Yellow")) return "yellow";
-                    if (entry.display().getString().contains("Aqua")) return "aqua";
-                    if (entry.display().getString().contains("White")) return "white";
-                    if (entry.display().getString().contains("Pink")) return "pink";
-                    if (entry.display().getString().contains("Gray")) return "gray";
+                if (entry.display() != null) {
+                    if (entry.display().getString().contains("YOU")) {
+                        if (entry.display().getString().contains("Red")) return "red";
+                        if (entry.display().getString().contains("Blue")) return "blue";
+                        if (entry.display().getString().contains("Green")) return "green";
+                        if (entry.display().getString().contains("Yellow")) return "yellow";
+                        if (entry.display().getString().contains("Aqua")) return "aqua";
+                        if (entry.display().getString().contains("White")) return "white";
+                        if (entry.display().getString().contains("Pink")) return "pink";
+                        if (entry.display().getString().contains("Gray")) return "gray";
+                    }
                 }
             }
         }
