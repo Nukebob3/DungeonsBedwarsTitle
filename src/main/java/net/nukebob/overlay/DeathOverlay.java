@@ -7,9 +7,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.nukebob.DungeonsBedwars;
-import net.nukebob.sound.ModSounds;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,7 +26,7 @@ public class DeathOverlay {
         final float[] frame = {0};
         final float[] backFrame = {0};
         final float[] countFrame = {0};
-        player.playSoundToPlayer(ModSounds.DEATH, SoundCategory.MASTER, 1, 1);
+        player.playSoundToPlayer(SoundEvent.of(Identifier.of(DungeonsBedwars.MOD_ID, "death")), SoundCategory.MASTER, 1, 1);
         HudRenderCallback.EVENT.register((drawContext, tickDeltaManager) -> {
             MinecraftClient client = MinecraftClient.getInstance();
             int screenWidth = client.getWindow().getScaledWidth();

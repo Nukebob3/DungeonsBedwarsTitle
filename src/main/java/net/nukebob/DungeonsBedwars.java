@@ -10,7 +10,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.nukebob.overlay.BedOverlay;
 import net.nukebob.overlay.DeathOverlay;
-import net.nukebob.sound.ModSounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,8 +20,6 @@ public class DungeonsBedwars implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ModSounds.registerSounds();
-
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			DeathOverlay.running = false;
 			BedOverlay.running = false;

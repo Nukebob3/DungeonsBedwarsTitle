@@ -7,9 +7,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.nukebob.DungeonsBedwars;
-import net.nukebob.sound.ModSounds;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -21,7 +21,7 @@ public class VictoryOverlay {
         AtomicBoolean lRunning = new AtomicBoolean(true);
         final int frames = 57;
         final float[] frame = {0};
-        player.playSoundToPlayer(ModSounds.VICTORY, SoundCategory.MASTER, 1, 1);
+        player.playSoundToPlayer(SoundEvent.of(Identifier.of(DungeonsBedwars.MOD_ID, "finally")), SoundCategory.MASTER, 1, 1);
         HudRenderCallback.EVENT.register((drawContext, tickDeltaManager) -> {
             if (lRunning.get()) {
                 MinecraftClient client = MinecraftClient.getInstance();

@@ -81,9 +81,6 @@ public class ClientPlayerEntityMixin {
 		if (packet.text().getString().toLowerCase().contains("respawned")) {
 			DeathOverlay.running = false;
 		}
-		else if (packet.text().getString().isEmpty() && DeathOverlay.running) {
-			DeathOverlay.running = false;
-		}
 	}
 	@Inject(method = "onSubtitle", at = @At("TAIL"))
 	private void setSubtitle(SubtitleS2CPacket packet, CallbackInfo ci) {
