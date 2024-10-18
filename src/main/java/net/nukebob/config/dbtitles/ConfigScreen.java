@@ -1,4 +1,4 @@
-package net.nukebob.config;
+package net.nukebob.config.dbtitles;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
@@ -16,7 +16,7 @@ public class ConfigScreen extends Screen {
 
     private final Screen parent;
 
-    Config config = ConfigManager.loadConfig();
+    DungeonsBedwarsTitlesConfig config = DungeonsBedwarsTitlesConfig.loadConfig();
 
     int enableColour = 8781731;
     int disableColour = 16745861;
@@ -82,25 +82,25 @@ public class ConfigScreen extends Screen {
                 }
             }
         }
-        ConfigManager.saveConfig();
+        DungeonsBedwarsTitlesConfig.saveConfig();
     }
 
     private void toggleVictoryEnabled(ButtonWidget buttonWidget) {
         config.victory_enabled = !config.victory_enabled;
         buttonWidget.setMessage(Text.translatable("db:config.victory").append(" ").append(Text.translatable("db:config." + (config.victory_enabled ? "enabled" : "disabled"))).withColor(config.victory_enabled ? enableColour : disableColour));
-        ConfigManager.saveConfig();
+        DungeonsBedwarsTitlesConfig.saveConfig();
     }
 
     private void toggleDeathEnabled(ButtonWidget buttonWidget) {
         config.death_enabled = !config.death_enabled;
         buttonWidget.setMessage(Text.translatable("db:config.death").append(" ").append(Text.translatable("db:config." + (config.death_enabled ? "enabled" : "disabled"))).withColor(config.death_enabled ? enableColour : disableColour));
-        ConfigManager.saveConfig();
+        DungeonsBedwarsTitlesConfig.saveConfig();
     }
 
     private void toggleBedEnabled(ButtonWidget buttonWidget) {
         config.bed_enabled = !config.bed_enabled;
         buttonWidget.setMessage(Text.translatable("db:config.bed").append(" ").append(Text.translatable("db:config." + (config.bed_enabled ? "enabled" : "disabled"))).withColor(config.bed_enabled ? enableColour : disableColour));
-        ConfigManager.saveConfig();
+        DungeonsBedwarsTitlesConfig.saveConfig();
     }
 
     private void closeScreen() {

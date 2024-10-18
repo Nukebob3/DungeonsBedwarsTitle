@@ -20,7 +20,7 @@
 			"net.nukebob.DungeonsBedwars"
 		],
 		"modmenu": [
-			"net.nukebob.config.ModMenuIntegration"
+			"net.nukebob.config.dbtitles.ModMenuIntegration"
 		]
 	},
 	"mixins": [
@@ -38,7 +38,7 @@
 	"custom": {
 		"modmenu": {
 			"links": {
-				"modmenu.discord": "https://discord.gg/FddwMasb",
+				"modmenu.discord": "https://discord.gg/MZ9bzbYzxA",
 				"modmenu.youtube": "https://www.youtube.com/nukebob3"
 			},
 			"update_checker": true

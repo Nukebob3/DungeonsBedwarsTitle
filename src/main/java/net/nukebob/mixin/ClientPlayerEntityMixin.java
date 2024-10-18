@@ -5,7 +5,7 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.text.Text;
-import net.nukebob.config.ConfigManager;
+import net.nukebob.config.dbtitles.DungeonsBedwarsTitlesConfig;
 import net.nukebob.overlay.BedOverlay;
 import net.nukebob.overlay.DeathOverlay;
 import net.nukebob.overlay.VictoryOverlay;
@@ -25,9 +25,9 @@ public class ClientPlayerEntityMixin {
 
 	@Inject(method = "onTitle", at = @At("TAIL"))
 	private void setTitle(TitleS2CPacket packet, CallbackInfo ci) {
-		if (ConfigManager.loadConfig().mod_enabled) {
+		if (DungeonsBedwarsTitlesConfig.loadConfig().mod_enabled) {
 			title = packet.text().getString().toLowerCase();
-			if (packet.text().getString().toLowerCase().contains("victory") && ConfigManager.loadConfig().victory_enabled) {
+			if (packet.text().getString().toLowerCase().contains("victory") && DungeonsBedwarsTitlesConfig.loadConfig().victory_enabled) {
 				MinecraftClient client = MinecraftClient.getInstance();
 				client.inGameHud.setSubtitle(Text.literal(""));
 				client.inGameHud.setTitle(Text.literal(""));
@@ -36,7 +36,7 @@ public class ClientPlayerEntityMixin {
 					VictoryOverlay.displayImage(client.player);
 				}
 			}
-			else if (packet.text().getString().toLowerCase().contains("died") && ConfigManager.loadConfig().death_enabled) {
+			else if (packet.text().getString().toLowerCase().contains("died") && DungeonsBedwarsTitlesConfig.loadConfig().death_enabled) {
 				if (subtitle.contains("5")) {
 					MinecraftClient client = MinecraftClient.getInstance();
 					client.inGameHud.setSubtitle(Text.literal(""));
@@ -67,7 +67,7 @@ public class ClientPlayerEntityMixin {
 					DeathOverlay.countdown = 0;
 				}
 			}
-			else if (packet.text().getString().toLowerCase().contains("bed destroyed") && ConfigManager.loadConfig().bed_enabled) {
+			else if (packet.text().getString().toLowerCase().contains("bed destroyed") && DungeonsBedwarsTitlesConfig.loadConfig().bed_enabled) {
 				MinecraftClient client = MinecraftClient.getInstance();
 				client.inGameHud.setSubtitle(Text.literal(""));
 				client.inGameHud.setTitle(Text.literal(""));
@@ -84,9 +84,9 @@ public class ClientPlayerEntityMixin {
 	}
 	@Inject(method = "onSubtitle", at = @At("TAIL"))
 	private void setSubtitle(SubtitleS2CPacket packet, CallbackInfo ci) {
-		if (ConfigManager.loadConfig().mod_enabled) {
+		if (DungeonsBedwarsTitlesConfig.loadConfig().mod_enabled) {
 			subtitle = packet.text().getString().toLowerCase();
-			if (title.contains("died") && ConfigManager.loadConfig().death_enabled) {
+			if (title.contains("died") && DungeonsBedwarsTitlesConfig.loadConfig().death_enabled) {
 				if (subtitle.contains("5")) {
 					MinecraftClient client = MinecraftClient.getInstance();
 					client.inGameHud.setSubtitle(Text.literal(""));
@@ -117,7 +117,7 @@ public class ClientPlayerEntityMixin {
 					DeathOverlay.countdown = 0;
 				}
 			}
-			else if (packet.text().getString().toLowerCase().contains("no longer respawn") && ConfigManager.loadConfig().bed_enabled) {
+			else if (packet.text().getString().toLowerCase().contains("no longer respawn") && DungeonsBedwarsTitlesConfig.loadConfig().bed_enabled) {
 				MinecraftClient client = MinecraftClient.getInstance();
 				client.inGameHud.setSubtitle(Text.literal(""));
 				client.inGameHud.setTitle(Text.literal(""));
