@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.nukebob.overlay.BedOverlay;
 import net.nukebob.overlay.DeathOverlay;
 import net.nukebob.overlay.VictoryOverlay;
@@ -22,9 +23,9 @@ public class DungeonsBedwars implements ClientModInitializer {
 			BedOverlay.running = false;
 		});
 
-		VictoryOverlay.EVENT.register(new VictoryOverlay());
-		DeathOverlay.EVENT.register(new DeathOverlay());
-		BedOverlay.EVENT.register(new BedOverlay());
+		HudElementRegistry.addLast(VictoryOverlay.ID, new VictoryOverlay());
+		HudElementRegistry.addLast(DeathOverlay.ID, new DeathOverlay());
+		HudElementRegistry.addLast(BedOverlay.ID, new BedOverlay());
 
 		LOGGER.info("Loaded Dungeons Bedwars by Nukebob3!");
 	}
