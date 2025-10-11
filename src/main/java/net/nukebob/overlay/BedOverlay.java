@@ -1,176 +1,120 @@
 package net.nukebob.overlay;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.LayeredDrawerWrapper;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.ScoreboardDisplaySlot;
 import net.minecraft.scoreboard.ScoreboardEntry;
 import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.nukebob.DungeonsBedwars;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.awt.*;
 
-public class BedOverlay {
+public class BedOverlay implements HudLayerRegistrationCallback {
+    public static float frame = 0;
     public static boolean running = false;
+    private static String colour = "white";
 
-    @Environment(EnvType.CLIENT)
-    public static void bedDestroyed() {
-        final float[] frame = {0};
-        final String colour = getTeamColour(MinecraftClient.getInstance());
-        AtomicBoolean lRunning = new AtomicBoolean(true);
-        if (DeathOverlay.running) {
-            HudRenderCallback.EVENT.register((drawContext, tickDeltaManager) -> {
-                int fadeOutAfter = 100;
-                int fade = 5;
-                if (lRunning.get()) {
-                    MinecraftClient client = MinecraftClient.getInstance();
-                    int screenWidth = client.getWindow().getScaledWidth();
-                    int screenHeight = client.getWindow().getScaledHeight();
-                    int frameDuration = 3;
-                    Identifier bed;
-                    if (Math.floor(frame[0]) <= frameDuration) {
-                        bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/0.png");
-                    } else if (Math.floor(frame[0]) <= frameDuration * 2) {
-                        bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/1.png");
-                    } else {
-                        bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/2.png");
-                    }
-                    int bWidth = 16 * 2;
-                    int bHeight = 16 * 2;
-                    int xShake = 0;
-                    int yShake = 0;
-                    int xShakeFactor = 5;
-                    int yShakeFactor = 5;
-                    if (Math.floor(frame[0]) < 10) {
-                        xShake = (int) (xShakeFactor * (1 - (Math.floor(frame[0]) / 10)));
-                        if ((int) frame[0] % 2 == 0) xShake *= -1;
-                        yShake = (int) (yShakeFactor * (1 - (Math.floor(frame[0]) / 10)));
-                        if ((int) frame[0] % 2 == 0) yShake *= -1;
-                    }
-                    float bxPercent = 0.7f;
-                    float byPercent = 0.95f;
-                    Identifier text = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/text.png");
-                    int tWidth = 327 / 5;
-                    int tHeight = 37 / 5;
-                    float txPercent = 0.7f;
-                    float tyPercent = 0.94f;
-                    float shadowOpacity = 0.5f;
-                    int shadowOffset = 1;
-                    if (Math.floor(frame[0]) < fadeOutAfter) {
-                        RenderSystem.enableBlend();
-                        RenderSystem.defaultBlendFunc();
-                        drawContext.setShaderColor(0.0F, 0.0F, 0.0F, (Math.floor(frame[0]) < fade ? frame[0] / fade * shadowOpacity : shadowOpacity));
-                        drawContext.drawTexture(bed, (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake + shadowOffset, (int) ((screenHeight * (1 - byPercent)) + bHeight) + yShake + shadowOffset, 0, 0, bWidth, bHeight, bWidth, bHeight);
-                        drawContext.drawTexture(text, (int) ((screenWidth * txPercent) - (float) tWidth / 2) + shadowOffset, (int) ((screenHeight * (1 - tyPercent)) + tHeight) + shadowOffset, 0, 0, tWidth, tHeight, tWidth, tHeight);
-                        drawContext.setShaderColor(1.0F, 1.0F, 1.0F, (Math.floor(frame[0]) < fade ? frame[0] / fade : 1));
-                        drawContext.drawTexture(bed, (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake, (int) ((screenHeight * (1 - byPercent)) + bHeight) + yShake, 0, 0, bWidth, bHeight, bWidth, bHeight);
-                        drawContext.drawTexture(text, (int) ((screenWidth * txPercent) - (float) tWidth / 2), (int) ((screenHeight * (1 - tyPercent)) + tHeight), 0, 0, tWidth, tHeight, tWidth, tHeight);
-                        drawContext.drawText(client.textRenderer, "You will no", (int) ((screenWidth * bxPercent)) - 30, (int) ((screenHeight * (1 - 0.75))), Colors.RED, true);
-                        drawContext.drawText(client.textRenderer, "longer respawn", (int) ((screenWidth * bxPercent) - 30), (int) ((screenHeight * (1 - 0.74)) + 10), Colors.RED, true);
-                        RenderSystem.disableBlend();
-
-                        frame[0] += tickDeltaManager.getLastFrameDuration();
-                    } else if (Math.floor(frame[0]) < fadeOutAfter + fade) {
-                        RenderSystem.enableBlend();
-                        RenderSystem.defaultBlendFunc();
-                        drawContext.setShaderColor(0.0F, 0.0F, 0.0F, (1.0f - ((frame[0] + 3 - fadeOutAfter) / (float) fade) * shadowOpacity));
-                        drawContext.drawTexture(bed, (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake + shadowOffset, (int) ((screenHeight * (1 - byPercent)) + bHeight) + yShake + shadowOffset, 0, 0, bWidth, bHeight, bWidth, bHeight);
-                        drawContext.drawTexture(text, (int) ((screenWidth * txPercent) - (float) tWidth / 2) + shadowOffset, (int) ((screenHeight * (1 - tyPercent)) + tHeight) + shadowOffset, 0, 0, tWidth, tHeight, tWidth, tHeight);
-                        drawContext.setShaderColor(1.0F, 1.0F, 1.0F, (1.0f - ((frame[0] - fadeOutAfter) / (float) fade)));
-                        drawContext.drawTexture(bed, (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake, (int) ((screenHeight * (1 - byPercent)) + bHeight) + yShake, 0, 0, bWidth, bHeight, bWidth, bHeight);
-                        drawContext.drawTexture(text, (int) ((screenWidth * txPercent) - (float) tWidth / 2), (int) ((screenHeight * (1 - tyPercent)) + tHeight), 0, 0, tWidth, tHeight, tWidth, tHeight);
-                        drawContext.setShaderColor(1.0F, 1.0F, 1.0F, 1);
-                        RenderSystem.disableBlend();
-
-                        frame[0] += tickDeltaManager.getLastFrameDuration();
-                    }
-                }
-                if (frame[0] > fadeOutAfter + fade) {
-                    running = false;
-                    lRunning.set(false);
-                }
-            });
-        } else {
-            HudRenderCallback.EVENT.register((drawContext, tickDeltaManager) -> {
-                int fadeOutAfter = 100;
-                int fade = 5;
-                if (lRunning.get()) {
-                    MinecraftClient client = MinecraftClient.getInstance();
-                    int screenWidth = client.getWindow().getScaledWidth();
-                    int screenHeight = client.getWindow().getScaledHeight();
-                    int frameDuration = 3;
-                    Identifier bed;
-                    if (Math.floor(frame[0]) <= frameDuration) {
-                        bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/0.png");
-                    } else if (Math.floor(frame[0]) <= frameDuration * 2) {
-                        bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/1.png");
-                    } else {
-                        bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/2.png");
-                    }
-                    int bWidth = 16 * 3;
-                    int bHeight = 16 * 3;
-                    int xShake = 0;
-                    int yShake = 0;
-                    int xShakeFactor = 5;
-                    int yShakeFactor = 5;
-
-                    if (Math.floor(frame[0]) < 10) {
-                        xShake = (int) (xShakeFactor * (1 - (Math.floor(frame[0]) / 10)));
-                        if ((int) frame[0] % 2 == 0) xShake *= -1;
-                        yShake = (int) (yShakeFactor * (1 - (Math.floor(frame[0]) / 10)));
-                        if ((int) frame[0] % 2 == 0) yShake *= -1;
-                    }
-                    float bxPercent = 0.5f;
-                    float byPercent = 0.75f;
-                    Identifier text = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/text.png");
-                    int tWidth = 327 / 5;
-                    int tHeight = 37 / 5;
-                    float txPercent = 0.5f;
-                    float tyPercent = 0.745f;
-                    float shadowOpacity = 0.5f;
-                    int shadowOffset = 1;
-                    if (Math.floor(frame[0]) < fadeOutAfter) {
-                        RenderSystem.enableBlend();
-                        RenderSystem.defaultBlendFunc();
-                        drawContext.setShaderColor(0.0F, 0.0F, 0.0F, (Math.floor(frame[0]) < fade ? frame[0] / fade * shadowOpacity : shadowOpacity));
-                        drawContext.drawTexture(bed, (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake + shadowOffset, (int) ((screenHeight * (1 - byPercent)) + (float) bHeight / 2) + yShake + shadowOffset, 0, 0, bWidth, bHeight, bWidth, bHeight);
-                        drawContext.drawTexture(text, (int) ((screenWidth * txPercent) - (float) tWidth / 2) + shadowOffset, (int) ((screenHeight * (1 - tyPercent)) + (float) tHeight / 2) + shadowOffset, 0, 0, tWidth, tHeight, tWidth, tHeight);
-                        drawContext.setShaderColor(1.0F, 1.0F, 1.0F, (Math.floor(frame[0]) < fade ? frame[0] / fade : 1));
-                        drawContext.drawTexture(bed, (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake, (int) ((screenHeight * (1 - byPercent)) + (float) bHeight / 2) + yShake, 0, 0, bWidth, bHeight, bWidth, bHeight);
-                        drawContext.drawTexture(text, (int) ((screenWidth * txPercent) - (float) tWidth / 2), (int) ((screenHeight * (1 - tyPercent)) + (float) tHeight / 2), 0, 0, tWidth, tHeight, tWidth, tHeight);
-                        drawContext.drawText(client.textRenderer, "You will no longer respawn", (int) ((screenWidth * bxPercent)) - 65, (int) ((screenHeight * (1 - 0.4))), Colors.RED, true);
-                        RenderSystem.disableBlend();
-
-                        frame[0] += tickDeltaManager.getLastFrameDuration();
-                    } else if (Math.floor(frame[0]) < fadeOutAfter + fade) {
-                        RenderSystem.enableBlend();
-                        RenderSystem.defaultBlendFunc();
-                        drawContext.setShaderColor(0.0F, 0.0F, 0.0F, (1.0f - ((frame[0] + 3 - fadeOutAfter) / (float) fade) * shadowOpacity));
-                        drawContext.drawTexture(bed, (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake + shadowOffset, (int) ((screenHeight * (1 - byPercent)) + (float) bHeight / 2) + yShake + shadowOffset, 0, 0, bWidth, bHeight, bWidth, bHeight);
-                        drawContext.drawTexture(text, (int) ((screenWidth * txPercent) - (float) tWidth / 2) + shadowOffset, (int) ((screenHeight * (1 - tyPercent)) + (float) tHeight / 2) + shadowOffset, 0, 0, tWidth, tHeight, tWidth, tHeight);
-                        drawContext.setShaderColor(1.0F, 1.0F, 1.0F, (1.0f - ((frame[0] - fadeOutAfter) / (float) fade)));
-                        drawContext.drawTexture(bed, (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake, (int) ((screenHeight * (1 - byPercent)) + (float) bHeight / 2) + yShake, 0, 0, bWidth, bHeight, bWidth, bHeight);
-                        drawContext.drawTexture(text, (int) ((screenWidth * txPercent) - (float) tWidth / 2), (int) ((screenHeight * (1 - tyPercent)) + (float) tHeight / 2), 0, 0, tWidth, tHeight, tWidth, tHeight);
-                        drawContext.setShaderColor(1.0F, 1.0F, 1.0F, 1);
-                        RenderSystem.disableBlend();
-
-                        frame[0] += tickDeltaManager.getLastFrameDuration();
-                    }
-                }
-                if (frame[0] > fadeOutAfter + fade) {
-                    running = false;
-                    lRunning.set(false);
-                }
-            });
-        }
+    public static void display() {
+        frame = 0;
+        running = true;
+        colour = getTeamColour();
     }
 
-    public static String getTeamColour(MinecraftClient client) {
+    @Override
+    public void register(LayeredDrawerWrapper layeredDrawerWrapper) {
+        layeredDrawerWrapper.addLayer(new IdentifiedLayer() {
+            @Override
+            public Identifier id() {
+                return Identifier.of(DungeonsBedwars.MOD_ID, "bed_overlay");
+            }
+
+            @Override
+            public void render(DrawContext context, RenderTickCounter tickCounter) {
+                if (!running) return;
+
+                MinecraftClient client = MinecraftClient.getInstance();
+                boolean deathRunning = DeathOverlay.running;
+
+                // ─── Configuration ─────────────────────────────
+                int fadeOutAfter = 100, fade = 5;
+                int screenWidth = context.getScaledWindowWidth();
+                int screenHeight = context.getScaledWindowHeight();
+                int frameDuration = 3;
+
+                // ─── Frame animation ───────────────────────────
+                int frameIndex = Math.min(2, (int) (frame / frameDuration));
+                Identifier bed = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/" + colour + "/" + frameIndex);
+                Identifier text = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/bed/text");
+
+                // ─── Shake calculation ─────────────────────────
+                int xShake = 0, yShake = 0;
+                int shakeFactor = 5;
+                if (frame < 10) {
+                    xShake = (int) (shakeFactor * (1 - frame / 10f)) * ((int) frame % 2 == 0 ? -1 : 1);
+                    yShake = (int) (shakeFactor * (1 - frame / 10f)) * ((int) frame % 2 == 0 ? -1 : 1);
+                }
+
+                // ─── Positioning ──────────────────────────────
+                float bxPercent = deathRunning ? 0.7f : 0.5f;
+                float byPercent = deathRunning ? 0.95f : 0.75f;
+                float txPercent = deathRunning ? 0.7f : 0.5f;
+                float tyPercent = deathRunning ? 0.94f : 0.745f;
+
+                int bWidth = deathRunning ? 32 : 48; // 16*2 or 16*3
+                int bHeight = deathRunning ? 32 : 48;
+                int tWidth = 327 / 5;
+                int tHeight = 37 / 5;
+                int shadowOffset = 1;
+                float shadowOpacity = 0.5f;
+
+                // ─── Fade calculation ─────────────────────────
+                float fadeProgress = frame < fade ? frame / (float) fade : 1f;
+                float fadeOutProgress = Math.max(0f, 1f - (frame - fadeOutAfter) / (float) fade);
+                float shadowAlpha = frame < fadeOutAfter ? fadeProgress * shadowOpacity : fadeOutProgress * shadowOpacity;
+                Color shadowColor = new Color(0f, 0f, 0f, Math.clamp(shadowAlpha, 0, 1));
+                Color mainColor = new Color(1f, 1f, 1f, Math.clamp(frame < fadeOutAfter ? fadeProgress : fadeOutProgress, 0, 1));
+                Color redColor = new Color(1f, 0f, 0f, mainColor.getAlpha() / 255f);
+
+                // ─── Draw textures ────────────────────────────
+                int bedX = (int) ((screenWidth * bxPercent) - (float) bWidth / 2) + xShake;
+                int bedY = (int) ((screenHeight * (1 - byPercent)) + (deathRunning ? bHeight : (float) bHeight / 2)) + yShake;
+                int textX = (int) ((screenWidth * txPercent) - (float) tWidth / 2);
+                int textY = (int) ((screenHeight * (1 - tyPercent)) + (deathRunning ? tHeight : (float) tHeight / 2));
+
+                // Shadow
+                context.drawGuiTexture(RenderLayer::getGuiTextured, bed, bedX + shadowOffset, bedY + shadowOffset, bWidth, bHeight, shadowColor.getRGB());
+                context.drawGuiTexture(RenderLayer::getGuiTextured, text, textX + shadowOffset, textY + shadowOffset, tWidth, tHeight, shadowColor.getRGB());
+
+                // Main
+                context.drawGuiTexture(RenderLayer::getGuiTextured, bed, bedX, bedY, bWidth, bHeight, mainColor.getRGB());
+                context.drawGuiTexture(RenderLayer::getGuiTextured, text, textX, textY, tWidth, tHeight, mainColor.getRGB());
+
+                // ─── Draw text ────────────────────────────────
+                if (deathRunning) {
+                    context.drawText(client.textRenderer, "You will no", bedX - 2, (int) (screenHeight * 0.25), redColor.getRGB(), true);
+                    context.drawText(client.textRenderer, "longer respawn", bedX - 2, (int) (screenHeight * 0.25) + 10, redColor.getRGB(), true);
+                } else {
+                    context.drawText(client.textRenderer, "You will no longer respawn", bedX - 30, (int) (screenHeight * 0.6), redColor.getRGB(), true);
+                }
+
+                // ─── Update frame ─────────────────────────────
+                if (!client.isPaused()) frame += tickCounter.getDynamicDeltaTicks();
+                if (frame > fadeOutAfter + fade) running = false;
+            }
+        });
+    }
+
+    public static String getTeamColour() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.player==null) return "white";
+
         ScoreboardObjective sidebar = client.player.getScoreboard().getObjectiveForSlot(ScoreboardDisplaySlot.SIDEBAR);
         if (sidebar != null) {
             for (ScoreboardEntry entry : client.player.getScoreboard().getScoreboardEntries(sidebar)) {

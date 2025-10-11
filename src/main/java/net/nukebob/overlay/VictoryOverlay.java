@@ -1,53 +1,73 @@
 package net.nukebob.overlay;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.LayeredDrawerWrapper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.sound.SoundCategory;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.nukebob.DungeonsBedwars;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.awt.*;
 
-public class VictoryOverlay {
+public class VictoryOverlay implements HudLayerRegistrationCallback {
+    private static final int INTRO_FRAMES = 57;
+    private static final int HOLD_FRAMES = 80;
+    private static final int FADE_FRAMES = 18;
+
+    private static final int WIDTH = 576;
+    private static final int HEIGHT = 266;
+
     public static boolean running = false;
+    public static float frame = 0;
 
     @Environment(EnvType.CLIENT)
-    public static void displayImage(PlayerEntity player) {
-        AtomicBoolean lRunning = new AtomicBoolean(true);
-        final int frames = 57;
-        final float[] frame = {0};
-        player.playSoundToPlayer(SoundEvent.of(Identifier.of(DungeonsBedwars.MOD_ID, "finally")), SoundCategory.MASTER, 1, 1);
-        HudRenderCallback.EVENT.register((drawContext, tickDeltaManager) -> {
-            if (lRunning.get()) {
+    public static void display() {
+        running = true;
+        frame = 0;
+        MinecraftClient.getInstance().getSoundManager().play(
+                PositionedSoundInstance.master(
+                        SoundEvent.of(Identifier.of(DungeonsBedwars.MOD_ID, "finally")), 1, 1
+                )
+        );
+    }
+
+    @Override
+    public void register(LayeredDrawerWrapper layeredDrawerWrapper) {
+        layeredDrawerWrapper.addLayer(new IdentifiedLayer() {
+            @Override
+            public Identifier id() {
+                return Identifier.of(DungeonsBedwars.MOD_ID, "victory_overlay");
+            }
+
+            @Override
+            public void render(DrawContext context, RenderTickCounter tickCounter) {
+                if (!running) return;
+
                 MinecraftClient client = MinecraftClient.getInstance();
                 int screenWidth = client.getWindow().getScaledWidth();
                 int screenHeight = client.getWindow().getScaledHeight();
-                Identifier texture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/victory/" + (int) Math.floor(frame[0]) + ".png");
-                int width = 576;
-                int height = 266;
-                if (frame[0] > frames) {
-                    if (frame[0] < frames + 100) {
-                        texture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/victory/" + frames + ".png");
-                    } else if (frame[0] < frames + 100 + 19) {
-                        texture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/victory/" + "f" + (int) (frame[0] - frames - 100) + ".png");
-                    } else {
-                        texture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/victory/" + 0 + ".png");
-                    }
+                if (frame <= INTRO_FRAMES) {
+                    Identifier texture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/victory/" + (int) Math.floor(frame));
+                    context.drawGuiTexture(RenderLayer::getGuiTextured, texture, (screenWidth - WIDTH) / 2, (screenHeight - HEIGHT) / 2, WIDTH, HEIGHT);
+                } else if (frame <= INTRO_FRAMES + HOLD_FRAMES) {
+                    Identifier texture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/victory/" + 57);
+                    context.drawGuiTexture(RenderLayer::getGuiTextured, texture, (screenWidth - WIDTH) / 2, (screenHeight - HEIGHT) / 2, WIDTH, HEIGHT);
+                } else if (frame <= INTRO_FRAMES + HOLD_FRAMES + FADE_FRAMES) {
+                    Identifier texture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/victory/" + 57);
+                    context.drawGuiTexture(RenderLayer::getGuiTextured, texture, (screenWidth - WIDTH) / 2, (screenHeight - HEIGHT) / 2, WIDTH, HEIGHT, new Color(1, 1, 1, (18 - (frame - 57 - 80)) / 18).getRGB());
                 }
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                if (frame[0] < frames + 100 + 19) drawContext.drawTexture(texture, (screenWidth - width) / 2, (screenHeight - height) / 2, 0, 0, width, height, width, height);
-                RenderSystem.disableBlend();
-                frame[0] += tickDeltaManager.getLastFrameDuration();
-            }
-            if (!(frame[0] < frames + 100 + 19)) {
-                running = false;
-                lRunning.set(false);
+
+                if (frame <= 176) {
+                    if (!client.isPaused()) frame += tickCounter.getDynamicDeltaTicks();
+                }
+                else running = false;
             }
         });
     }

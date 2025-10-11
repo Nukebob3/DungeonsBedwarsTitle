@@ -1,15 +1,12 @@
 package net.nukebob;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
-import net.fabricmc.fabric.impl.resource.loader.ResourceManagerHelperImpl;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.nukebob.overlay.BedOverlay;
 import net.nukebob.overlay.DeathOverlay;
+import net.nukebob.overlay.VictoryOverlay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +22,10 @@ public class DungeonsBedwars implements ClientModInitializer {
 			BedOverlay.running = false;
 		});
 
-		try {
-			ResourceManagerHelperImpl.registerBuiltinResourcePack(Identifier.of(MOD_ID, "dungeons_bedwars"), "resourcepacks/" + Identifier.of(MOD_ID, "dungeons_bedwars").getPath(), FabricLoader.getInstance().getModContainer(MOD_ID).get(), Text.literal("Dungeons Bedwars"), ResourcePackActivationType.NORMAL);
-		} catch (Exception e) {
-			LOGGER.error("Failed to register builtin resourcepack", e);
-		}
+		VictoryOverlay.EVENT.register(new VictoryOverlay());
+		DeathOverlay.EVENT.register(new DeathOverlay());
+		BedOverlay.EVENT.register(new BedOverlay());
+
+		LOGGER.info("Loaded Dungeons Bedwars by Nukebob3!");
 	}
 }

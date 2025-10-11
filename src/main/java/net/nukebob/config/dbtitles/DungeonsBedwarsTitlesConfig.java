@@ -14,6 +14,7 @@ public class DungeonsBedwarsTitlesConfig {
     public boolean victory_enabled = true;
     public boolean death_enabled = true;
     public boolean bed_enabled = true;
+    public boolean hypixel_only = true;
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final File CONFIG_FILE = new File("config/dungeonsBedwarsTitles.json");

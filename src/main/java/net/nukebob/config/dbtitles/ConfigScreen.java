@@ -1,19 +1,15 @@
 package net.nukebob.config.dbtitles;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextIconButtonWidget;
-import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.nukebob.DungeonsBedwars;
 
 public class ConfigScreen extends Screen {
-    public static boolean texturepackEnabled;
-
     private final Screen parent;
 
     DungeonsBedwarsTitlesConfig config = DungeonsBedwarsTitlesConfig.loadConfig();
@@ -24,7 +20,6 @@ public class ConfigScreen extends Screen {
     public ConfigScreen(Screen parent) {
         super(Text.translatable("db:config.title"));
         this.parent = parent;
-        texturepackEnabled = MinecraftClient.getInstance().getResourcePackManager().getEnabledIds().contains(DungeonsBedwars.MOD_ID + ":" + "dungeons_bedwars");
     }
 
     @Override
@@ -39,7 +34,7 @@ public class ConfigScreen extends Screen {
         ButtonWidget toggleDeathEnabledWidget = ButtonWidget.builder(Text.translatable("db:config.death").append(" ").append(Text.translatable("db:config." + (config.death_enabled ? "enabled" : "disabled"))).withColor(config.death_enabled ? enableColour : disableColour), this::toggleDeathEnabled)
                 .dimensions(centerX - buttonWidth / 2, centerY, buttonWidth, buttonHeight).build();
         ButtonWidget toggleBedEnabledWidget = ButtonWidget.builder(Text.translatable("db:config.bed").append(" ").append(Text.translatable("db:config." + (config.bed_enabled ? "enabled" : "disabled"))).withColor(config.bed_enabled ? enableColour : disableColour), this::toggleBedEnabled)
-                .dimensions(centerX - buttonWidth / 2, centerY + 20, buttonWidth, buttonHeight).build();
+                .dimensions(centerX - buttonWidth / 2, centerY+20, buttonWidth, buttonHeight).build();
         toggleVictoryEnabledWidget.active = config.mod_enabled;
         toggleDeathEnabledWidget.active = config.mod_enabled;
         toggleBedEnabledWidget.active = config.mod_enabled;
@@ -51,16 +46,16 @@ public class ConfigScreen extends Screen {
         ButtonWidget doneButtonWidget = ButtonWidget.builder(Text.translatable("db:config.done").withColor(Colors.WHITE), button -> closeScreen())
                 .dimensions(centerX - buttonWidth / 2, centerY + 45, buttonWidth - buttonHeight - 5, buttonHeight).build();
 
-        ButtonWidget texturePackWidget = TextIconButtonWidget.IconOnly.builder(Text.empty(), this::toggleTexturepack, true).texture(!texturepackEnabled ? Identifier.of(DungeonsBedwars.MOD_ID, "icon/mc") : Identifier.of(DungeonsBedwars.MOD_ID, "icon/mcd"), 12, 12).build();
-        texturePackWidget.setTooltip(Tooltip.of(Text.literal("Texturepack")));
-        texturePackWidget.setDimensionsAndPosition(20, 20, centerX + buttonWidth / 2 - buttonHeight, centerY + 45);
+        ButtonWidget hypixelOnlyButtonWidget = TextIconButtonWidget.IconOnly.builder(Text.empty(), this::toggleHypixelOnly, true).texture(config.hypixel_only ? Identifier.of(DungeonsBedwars.MOD_ID, "server-icon/hypixel") : Identifier.of(DungeonsBedwars.MOD_ID, "server-icon/minecraft"), 20, 20).build();
+        hypixelOnlyButtonWidget.setTooltip(Tooltip.of(config.hypixel_only? Text.translatable("db:config.hypixel"):Text.translatable("db:config.all_servers")));
+        hypixelOnlyButtonWidget.setDimensionsAndPosition(20, 20, centerX + buttonWidth / 2 - buttonHeight, centerY + 45);
 
         this.addDrawableChild(toggleModEnabledWidget);
         this.addDrawableChild(toggleVictoryEnabledWidget);
         this.addDrawableChild(toggleDeathEnabledWidget);
         this.addDrawableChild(toggleBedEnabledWidget);
         this.addDrawableChild(doneButtonWidget);
-        this.addDrawableChild(texturePackWidget);
+        this.addDrawableChild(hypixelOnlyButtonWidget);
 
         super.init();
     }
@@ -77,8 +72,6 @@ public class ConfigScreen extends Screen {
                     widget.setMessage(Text.literal(widget.getMessage().getString()).withColor(config.victory_enabled ? enableColour : disableColour));
                 } else if (widget == widgets[1]) {
                     widget.setMessage(Text.literal(widget.getMessage().getString()).withColor(config.death_enabled ? enableColour : disableColour));
-                } else if (widget == widgets[2]) {
-                    widget.setMessage(Text.literal(widget.getMessage().getString()).withColor(config.bed_enabled ? enableColour : disableColour));
                 }
             }
         }
@@ -103,39 +96,23 @@ public class ConfigScreen extends Screen {
         DungeonsBedwarsTitlesConfig.saveConfig();
     }
 
-    private void closeScreen() {
-        setCustomResourcePack();
-        this.client.setScreen(this.parent);
-    }
+    private void toggleHypixelOnly(ButtonWidget buttonWidget) {
+        config.hypixel_only = !config.hypixel_only;
+        this.remove(buttonWidget);
+        buttonWidget=TextIconButtonWidget.IconOnly.builder(Text.empty(), this::toggleHypixelOnly, true).texture(config.hypixel_only ? Identifier.of(DungeonsBedwars.MOD_ID, "server-icon/hypixel") : Identifier.of(DungeonsBedwars.MOD_ID, "server-icon/minecraft"), 20, 20).build();
+        buttonWidget.setTooltip(Tooltip.of(config.hypixel_only? Text.translatable("db:config.hypixel"):Text.translatable("db:config.all_servers")));
 
-    private void setCustomResourcePack() {
-        MinecraftClient client = MinecraftClient.getInstance();
-        ResourcePackManager packManager = client.getResourcePackManager();
-        String pack = "dungeons_bedwars";
-        if (texturepackEnabled) {
-            if (!packManager.getEnabledIds().contains(DungeonsBedwars.MOD_ID + ":" + pack)) {
-                client.getResourcePackManager().enable(DungeonsBedwars.MOD_ID + ":" + pack);
-                client.options.refreshResourcePacks(packManager);
-            }
-        } else {
-            if (packManager.getEnabledIds().contains(DungeonsBedwars.MOD_ID + ":" + pack)) {
-                client.getResourcePackManager().disable(DungeonsBedwars.MOD_ID + ":" + pack);
-                client.options.refreshResourcePacks(packManager);
-            }
-        }
-    }
-
-    private void toggleTexturepack(ButtonWidget widget) {
         int buttonWidth = 150;
         int buttonHeight = 20;
         int centerX = this.width / 2;
         int centerY = this.height / 2;
+        buttonWidget.setDimensionsAndPosition(20, 20, centerX + buttonWidth / 2 - buttonHeight, centerY + 45);
+        this.addDrawableChild(buttonWidget);
+        DungeonsBedwarsTitlesConfig.saveConfig();
+    }
 
-        this.remove(widget);
-        texturepackEnabled = !texturepackEnabled;
-        ButtonWidget texturePackWidget = TextIconButtonWidget.IconOnly.builder(Text.empty(), this::toggleTexturepack, true).texture(!texturepackEnabled ? Identifier.of(DungeonsBedwars.MOD_ID, "icon/mc") : Identifier.of(DungeonsBedwars.MOD_ID, "icon/mcd"), 12, 12).build();
-        texturePackWidget.setTooltip(Tooltip.of(Text.literal("Texturepack")));
-        texturePackWidget.setDimensionsAndPosition(20, 20, centerX + buttonWidth / 2 - buttonHeight, centerY + 45);
-        this.addDrawableChild(texturePackWidget);
+    private void closeScreen() {
+        if (client==null)return;
+        this.client.setScreen(this.parent);
     }
 }

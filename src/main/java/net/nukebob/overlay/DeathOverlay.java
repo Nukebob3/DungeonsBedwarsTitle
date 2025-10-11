@@ -1,106 +1,78 @@
 package net.nukebob.overlay;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.LayeredDrawerWrapper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.sound.SoundCategory;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.nukebob.DungeonsBedwars;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.awt.*;
 
-public class DeathOverlay {
-    public static int countdown;
+public class DeathOverlay implements HudLayerRegistrationCallback {
+    public static int countdown = 0;
     public static boolean running = false;
+    public static float frame = 0;
+
+    private static final float MAX_FRAME = 200f;
+    private static final int WIDTH = 960 / 2;
+    private static final int HEIGHT = 540 / 2;
+
+    private static final Identifier RED_VIGNETTE = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/vignette/red");
+    private static final Identifier GRAY_VIGNETTE = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/vignette/gray");
 
     @Environment(EnvType.CLIENT)
-    public static void displayImage(PlayerEntity player) {
+    public static void display() {
+        running = true;
+        frame = 0;
         countdown = 3;
-        AtomicBoolean lRunning = new AtomicBoolean(true);
-        final int frames = 95;
-        final int backFrames = 41;
-        final float[] frame = {0};
-        final float[] backFrame = {0};
-        final float[] countFrame = {0};
-        player.playSoundToPlayer(SoundEvent.of(Identifier.of(DungeonsBedwars.MOD_ID, "death")), SoundCategory.MASTER, 1, 1);
-        HudRenderCallback.EVENT.register((drawContext, tickDeltaManager) -> {
-            MinecraftClient client = MinecraftClient.getInstance();
-            int screenWidth = client.getWindow().getScaledWidth();
-            int screenHeight = client.getWindow().getScaledHeight();
-            int width = 960 / 2;
-            int height = 540 / 2;
-            if (lRunning.get()) {
-                Identifier frontTexture;
-                Identifier backTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/bottom/" + ((int) Math.floor(backFrame[0]) % backFrames) + ".png");
-                if (Math.floor(frame[0]) >= frames) {
-                    frontTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/top/" + (frames - 1) + ".png");
-                } else if (lRunning.get()) {
-                    frontTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/top/" + (int) Math.floor(frame[0]) + ".png");
-                } else {
-                    frontTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/top/" + 0 + ".png");
-                }
-
-                RenderSystem.disableDepthTest();
-                RenderSystem.depthMask(false);
-                RenderSystem.enableBlend();
-                Identifier redVignette = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/vignette/red.png");
-                drawContext.setShaderColor(1.0F, 1.0F, 1.0F, 0.6f);
-                drawContext.drawTexture(redVignette, 0, 0, -90, 0.0F, 0.0F, drawContext.getScaledWindowWidth(), drawContext.getScaledWindowHeight(), drawContext.getScaledWindowWidth(), drawContext.getScaledWindowHeight());
-                Identifier grayVignette = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/vignette/gray.png");
-                float opacity = 0.4f;
-                if (frame[0] < 10) {
-                    drawContext.setShaderColor(1.0F, 1.0F, 1.0F, (frame[0] / 10 * opacity));
-                } else {
-                    drawContext.setShaderColor(1.0F, 1.0F, 1.0F, opacity);
-                }
-                drawContext.drawTexture(grayVignette, 0, 0, -91, 0.0F, 0.0F, drawContext.getScaledWindowWidth(), drawContext.getScaledWindowHeight(), drawContext.getScaledWindowWidth(), drawContext.getScaledWindowHeight());
-                RenderSystem.disableBlend();
-                RenderSystem.depthMask(true);
-                RenderSystem.enableDepthTest();
-                drawContext.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-                if (Math.floor(frame[0]) > 25) {
-                    RenderSystem.enableBlend();
-                    RenderSystem.defaultBlendFunc();
-                    Identifier countTexture;
-                    if (Math.floor(countFrame[0]) < 4) {
-                        countTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/count/" + (int) Math.floor(countFrame[0]) + ".png");
-                        drawContext.drawTexture(countTexture, (screenWidth - width) / 2, (screenHeight - height) / 2, 0, 0, width, height, width, height);
-                    } else {
-                        countTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/count/" + "c" + countdown + ".png");
-                        drawContext.drawTexture(countTexture, (screenWidth - width) / 2, (screenHeight - height) / 2, 0, 0, width, height, width, height);
-                    }
-                    drawContext.drawTexture(frontTexture, (screenWidth - width) / 2, (screenHeight - height) / 2, 0, 0, width, height, width, height);
-                    RenderSystem.disableBlend();
-                    countFrame[0] += tickDeltaManager.getLastFrameDuration();
-                } else {
-                    Identifier countTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/count/" + "0" + ".png");
-                    drawContext.drawTexture(countTexture, (screenWidth - width) / 2, (screenHeight - height) / 2, 0, 0, width, height, width, height);
-                }
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                if (Math.floor(frame[0]) < frames && Math.floor(frame[0]) > 19)
-                    drawContext.drawTexture(backTexture, (screenWidth - width) / 2, (screenHeight - height) / 2, 0, 0, width, height, width, height);
-                drawContext.drawTexture(frontTexture, (screenWidth - width) / 2, (screenHeight - height) / 2, 0, 0, width, height, width, height);
-                RenderSystem.disableBlend();
-                backFrame[0] += tickDeltaManager.getLastFrameDuration();
-                frame[0] += tickDeltaManager.getLastFrameDuration();
-            }
-            if (frame[0] > 200) {
-                DeathOverlay.running = false;
-            }
-            if (!running) {
-                lRunning.set(false);
-                frame[0] = 0;
-                backFrame[0] = 0;
-                countFrame[0] = 0;
-            }
-        });
+        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvent.of(Identifier.of(DungeonsBedwars.MOD_ID, "death")), 1, 1));
     }
 
 
+    @Override
+    public void register(LayeredDrawerWrapper layeredDrawerWrapper) {
+        layeredDrawerWrapper.addLayer(new IdentifiedLayer() {
+            @Override
+            public Identifier id() {
+                return Identifier.of(DungeonsBedwars.MOD_ID, "death_overlay");
+            }
+
+            @Override
+            public void render(DrawContext context, RenderTickCounter tickCounter) {
+                if (!running) return;
+
+                int screenWidth = context.getScaledWindowWidth();
+                int screenHeight = context.getScaledWindowHeight();
+                int x = (screenWidth - WIDTH) / 2;
+                int y = (screenHeight - HEIGHT) / 2;
+
+                Identifier backTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/bottom/" + ((int) frame % 41));
+                Identifier frontTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/top/" + (frame >=95?94:(int)frame));
+
+                context.drawGuiTexture(RenderLayer::getGuiTextured, RED_VIGNETTE, 0, 0, screenWidth, screenHeight, new Color(1, 1, 1, 0.6f).getRGB());
+
+                context.drawGuiTexture(RenderLayer::getGuiTextured, GRAY_VIGNETTE, 0, 0, screenWidth, screenHeight, new Color(1, 1, 1, 0.4f * (frame < 10 ? frame / 10f : 1)).getRGB());
+
+                if (frame > 25) {
+                    Identifier countTexture = Identifier.of(DungeonsBedwars.MOD_ID, "overlay/death/count/" + (frame<29?3:countdown));
+                    context.drawGuiTexture(RenderLayer::getGuiTextured, countTexture, x,y,WIDTH,HEIGHT,new Color(1,1,1,frame<29?(frame-25)/4f:1).getRGB());
+                }
+
+                if (frame > 19) context.drawGuiTexture(RenderLayer::getGuiTextured, backTexture, x,y, WIDTH, HEIGHT);
+                context.drawGuiTexture(RenderLayer::getGuiTextured, frontTexture,x,y, WIDTH, HEIGHT);
+
+                if (!MinecraftClient.getInstance().isPaused()) frame += tickCounter.getDynamicDeltaTicks();
+                if (frame > MAX_FRAME) running = false;
+
+            }
+        });
+    }
 }
