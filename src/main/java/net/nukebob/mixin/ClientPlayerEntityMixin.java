@@ -27,39 +27,39 @@ public class ClientPlayerEntityMixin {
 	private static String subtitle = "";
 
 	@Inject(method = "onTitle", at = @At("TAIL"))
-	private void setTitle(TitleS2CPacket packet, CallbackInfo ci) {
+	private void dbtitles$setTitle(TitleS2CPacket packet, CallbackInfo ci) {
 		MinecraftClient client = MinecraftClient.getInstance();
 		DungeonsBedwarsTitlesConfig config = DungeonsBedwarsTitlesConfig.loadConfig();
-		if (config.mod_enabled&&(isOnHypixel()|| !config.hypixel_only)) {
+		if (config.mod_enabled&&(dbtitles$isOnHypixel()|| !config.hypixel_only)) {
 			title = packet.text().getString().toLowerCase();
 			if (packet.text().getString().toLowerCase().contains("victory") && config.victory_enabled) {
-				clearTitles(client);
+				dbtitles$clearTitles(client);
 				if (!VictoryOverlay.running) {
 					VictoryOverlay.display();
 				}
 			}
 			else if (packet.text().getString().toLowerCase().contains("died") && config.death_enabled) {
 				if (subtitle.contains("5")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					if (!DeathOverlay.running) {
 						DeathOverlay.display();
 					}
 				} else if (subtitle.contains("4")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					DeathOverlay.countdown = 3;
 				} else if (subtitle.contains("3")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					DeathOverlay.countdown = 2;
 				} else if (subtitle.contains("2")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					DeathOverlay.countdown = 1;
 				} else if (subtitle.contains("1")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					DeathOverlay.countdown = 0;
 				}
 			}
 			else if (packet.text().getString().toLowerCase().contains("bed destroyed") && config.bed_enabled) {
-				clearTitles(client);
+				dbtitles$clearTitles(client);
 				if (!BedOverlay.running) {
 					BedOverlay.display();
 				}
@@ -72,28 +72,28 @@ public class ClientPlayerEntityMixin {
 		}
 	}
 	@Inject(method = "onSubtitle", at = @At("TAIL"))
-	private void setSubtitle(SubtitleS2CPacket packet, CallbackInfo ci) {
+	private void dbtitles$setSubtitle(SubtitleS2CPacket packet, CallbackInfo ci) {
 		MinecraftClient client = MinecraftClient.getInstance();
 		DungeonsBedwarsTitlesConfig config = DungeonsBedwarsTitlesConfig.loadConfig();
-		if (config.mod_enabled&&(isOnHypixel()|| !config.hypixel_only)) {
+		if (config.mod_enabled&&(dbtitles$isOnHypixel()|| !config.hypixel_only)) {
 			subtitle = packet.text().getString().toLowerCase();
 			if (title.contains("died") && config.death_enabled) {
 				if (subtitle.contains("5")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					if (!DeathOverlay.running) {
 						DeathOverlay.display();
 					}
 				} else if (subtitle.contains("4")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					DeathOverlay.countdown = 3;
 				} else if (subtitle.contains("3")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					DeathOverlay.countdown = 2;
 				} else if (subtitle.contains("2")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					DeathOverlay.countdown = 1;
 				} else if (subtitle.contains("1")) {
-					clearTitles(client);
+					dbtitles$clearTitles(client);
 					DeathOverlay.countdown = 0;
 				}
 			}
@@ -101,13 +101,13 @@ public class ClientPlayerEntityMixin {
 	}
 
 	@Unique
-	private static void clearTitles(MinecraftClient client) {
+	private static void dbtitles$clearTitles(MinecraftClient client) {
 		client.inGameHud.setSubtitle(Text.literal(""));
 		client.inGameHud.setTitle(Text.literal(""));
 	}
 
 	@Unique
-	private static boolean isOnHypixel() {
+	private static boolean dbtitles$isOnHypixel() {
 		MinecraftClient client = MinecraftClient.getInstance();
 		ServerInfo server = client.getCurrentServerEntry();
 		if (server == null) return false;
